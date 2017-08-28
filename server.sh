@@ -4,7 +4,6 @@
 # git clone -n --depth 1 https://github.com/wilmardo/ansible-travisci-deployserver.git .
 # git checkout HEAD server.sh
 
-
 lansible_path=(/root/LANsible/)
 playbook_paths=($lansible_path/plays/*.yml)
 
@@ -18,6 +17,8 @@ errorcheck() {
     if [ $ret_code != 0 ]; then
         printf "%(%F %T)T Error : ['$ret_code'] when executing command: '$cmnd' \n" -1 >> deploy-error.log
         exit $ret_code
+    else
+         printf "%(%F %T)T Successful command: '$cmnd' \n" -1 >> deploy.log
     fi
 }
 
