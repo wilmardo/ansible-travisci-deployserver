@@ -1,2 +1,3 @@
-#!/bin/sh
-echo $1 | ncat --ssl --ssl-verify travisci.lansible.nl
+#!/bin/bash
+#TODO: Change to newer ncat with basic auth and ssl
+echo $1 | nc deploy.lansible.nl
