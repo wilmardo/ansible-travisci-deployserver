@@ -8,8 +8,6 @@
 lansible_path=(/root/LANsible/)
 playbook_paths=($lansible_path/plays/*.yml)
 
-git pull
-
 errorcheck() {
     typeset cmnd="$*"
     typeset ret_code
