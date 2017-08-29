@@ -4,10 +4,50 @@
 # git clone -n --depth 1 https://github.com/wilmardo/ansible-travisci-deployserver.git .
 # git checkout HEAD server.sh
 
+# STATIC VARIABLES
+# lansible_path: Path to LANsible repository
+# roles_path: Path to save the roles to
+# log_path: Path to save logfiles to
 lansible_path=/opt/deploy/LANsible/
 roles_path=/opt/deploy/roles/
-playbook_paths=($lansible_path/plays/*.yml)
 log_path=/opt/deploy/deployserver/
+
+# DYNAMIC VARIABLES
+# playbook_paths: Path to playbooks in LANsible
+# play_name: Playbook name without extension
+# playbooks: Array with playbook names, without extension
+#
+playbook_paths=($lansible_path/plays/*.yml)
+playbooks=()
+for path in "${playbook_paths[@]}"; do
+	play_name=("$(basename "$path" .yml)")
+	playbooks+=$play_name
+    deps=( $(grep "role: wilmardo." $path | cut -d '.' -f 2) )
+
+    for dep in "${deps[@]}"; do
+        array_name=roles_using_${dep//-/_}
+        if [ -v ${!array_name} ]; then
+            echo testIf
+            declare -a $array_name=$play_name
+        else
+            echo testElse
+            declare $array_name+=$play_name
+        fi
+    done
+done
+
+testsetup=setup
+varname="roles_using_$testsetup"
+echo ${!varname[0]}
+
+for test in "declare ${!varname[@]}"; do
+    echo $test
+done
+
+for play in "${playbooks[@]}"; do
+    varname=deps_$play
+    echo ${!varname}
+done
 
 log_error() {
     printf "%(%F %T)T Error : $1 \n" -1 >> $log_path/deploy-error.log
@@ -34,11 +74,9 @@ errorcheck() {
 pull_repository() {
     typeset path="$roles_path/wilmardo.$1"
     if [ -d $path ]; then
-        cd $path
-        command="git pull"
+        command="cd $path && git pull"
     else
-        cd $roles_path
-        command="git clone --depth 1 https://github.com/wilmardo/ansible-role-$1.git wilmardo.$1"
+        command="cd $roles_path && git clone --depth 1 https://github.com/wilmardo/ansible-role-$1.git wilmardo.$1"
     fi
     errorcheck $command
 }
@@ -53,19 +91,12 @@ pull_lansible() {
     errorcheck $command
 }
 
-playbooks=()
-for path in "${playbook_paths[@]}"
-do
-	playbooks+=("$(basename "$path" .yml)")
-done
-
 ncat -lk 56789 | while IFS=, read -r -a p
 do
 	case "${playbooks[@]}" in  
 	   *"$p"*)
 	        pull_repository $p
-            command="ansible-playbook $lansible_path/plays/$p.yml"
-		    errorcheck $command
+		    errorcheck "ansible-playbook $lansible_path/plays/$p.yml"
 	   ;;
 	   *)
             if $p == "lansible"; then
