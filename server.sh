@@ -147,7 +147,7 @@ while [[ $nc_PID ]] && IFS= read -ru ${nc[0]} line; do
             if [ "$command" == "lansible" ]; then
                 printf 'HTTP/1.0 200 OK\r\nContent-Length: 0\r\n\r\n' >&"${nc[1]}"
                 pull_lansible
-            elif [ "$command" == "deployserver" ]; then #testcase for TravisCI test
+            elif [ "$command" == "deployserver" ]; then #testcase for TravisCI tests
                 printf 'HTTP/1.0 200 OK\r\nContent-Length: 0\r\n\r\n' >&"${nc[1]}"
                 exit 0
             else
