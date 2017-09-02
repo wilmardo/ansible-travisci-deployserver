@@ -1,3 +1,8 @@
 #!/bin/bash
-#TODO: Change to newer ncat with basic auth and ssl
-echo $1 | nc deploy.lansible.nl
+role=$(printenv TRAVIS_REPO_SLUG | rev | cut -d "-" -f1 | rev) #reverse cut leaves last part of repo name which is role name
+
+if [ -z "$DEPLOY_CREDENTIALS" ]; then
+    curl -u $DEPLOY_CREDENTIALS $1/?$role
+else
+    curl $1/?$role
+fi

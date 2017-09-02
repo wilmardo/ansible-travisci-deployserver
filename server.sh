@@ -10,7 +10,6 @@
 # log_path: Path to save logfiles to
 lansible_path=/opt/deploy/LANsible/
 roles_path=/opt/deploy/roles/
-galaxy_roles_path=/opt/deploy/roles/
 log_path=/opt/deploy/deployserver/
 
 log_error() {
@@ -42,10 +41,6 @@ pull_role() {
     else
         safeCommand "git clone --depth 1 https://github.com/wilmardo/ansible-role-$1.git $roles_path/wilmardo.$1"
     fi
-}
-
-pull_galaxy_roles() {
-    safeCommand "ansible-galaxy install --roles-path $galaxy_roles_path -r $lansible_path/requirements.yml"
 }
 
 update_all_hosts() {
@@ -108,12 +103,9 @@ deploy_role() {
     done
 }
 
-# SETUP
-# Pull main project and pull roles
-if [ ! -d $lansible_path ]; then
-  pull_lansible
-  pull_galaxy_roles
-fi
+cleanup() {
+    pkill -fx 'nc -lk 56789'
+}
 
 # DYNAMIC VARIABLES
 # playbook_paths: Path to playbooks in LANsible
@@ -121,7 +113,6 @@ fi
 # play_name: Playbook name without extension
 playbook_paths=($lansible_path/plays/*.yml)
 declare -A playbook_roles=()
-
 for path in "${playbook_paths[@]}"; do
     play_name=("$(basename "$path" .yml)")
     roles=( $(grep "role: wilmardo." $path | grep -v '^#' | cut -d '.' -f 2) )
@@ -135,21 +126,35 @@ for role in "${!playbook_roles[@]}"; do
     pull_role $role
 done
 
+# EXIT TRAP
+trap "cleanup" INT TERM EXIT
 
 # MAIN LOOP
-ncat -lk 56789 | while IFS=, read -r -a p
-do
-    case "${!playbook_roles[@]}" in
-    *"$p"*)
-        pull_role $p
-        deploy_role $p
-    ;;
-    *)
-        if [ "$p" == "lansible" ]; then
-            pull_lansible
-        else
-            log_error "Received unrecognized message: '$p'"
-        fi
-    ;;
-    esac
+# nc: coproc array with netcat server
+# line: HTTP request per line
+# command: parameter passed in the GET request
+coproc nc { nc -lk 56789; }
+while [[ $nc_PID ]] && IFS= read -ru ${nc[0]} line; do
+    if [[ $line == "GET"* ]]; then
+        command=$(echo $line | cut -d ' ' -f 2 | cut -c 3-) #split on space leaves /?role then cut first 2 chars off
+        case "${!playbook_roles[@]}" in
+        *"$command"*)
+            printf 'HTTP/1.0 200 OK\r\nContent-Length: 0\r\n\r\n' >&"${nc[1]}"
+            pull_role $command
+            deploy_role $command
+        ;;
+        *)
+            if [ "$command" == "lansible" ]; then
+                printf 'HTTP/1.0 200 OK\r\nContent-Length: 0\r\n\r\n' >&"${nc[1]}"
+                pull_lansible
+            elif [ "$command" == "deployserver" ]; then #testcase for TravisCI test
+                printf 'HTTP/1.0 200 OK\r\nContent-Length: 0\r\n\r\n' >&"${nc[1]}"
+                exit 0
+            else
+                printf 'HTTP/1.1 200 OK\r\nContent-Length: 0\r\n\r\n' >&"${nc[1]}"
+                log_error "Received unrecognized message: '$command'"
+            fi
+        ;;
+        esac
+    fi
 done

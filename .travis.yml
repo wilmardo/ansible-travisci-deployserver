@@ -1,0 +1,4 @@
+dist: trusty
+install: true
+
+script: test/test.sh
