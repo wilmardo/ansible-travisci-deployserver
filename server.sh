@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 # SETUP
 # git clone -n --depth 1 https://github.com/wilmardo/ansible-travisci-deployserver.git .
