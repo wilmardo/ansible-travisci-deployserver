@@ -2,4 +2,4 @@ language: bash
 dist: trusty
 install: true
 
-script: tests/test.sh
+script: ./tests/test.sh
