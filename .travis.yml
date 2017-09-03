@@ -4,5 +4,9 @@ install: true
 env:
   - DEPLOY_SCRIPT_NAME=test.sh
 
+before_script:
+  - server.sh
 script:
   - tests/test.sh
+#after_script:
+#  -
