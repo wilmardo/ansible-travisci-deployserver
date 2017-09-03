@@ -22,6 +22,6 @@ coproc nc { nc -lk 56789; }
 while [[ $nc_PID ]] && IFS= read -ru ${nc[0]} line; do
     if [[ $line == "GET"* ]]; then
         command=$(echo $line | cut -d ' ' -f 2 | cut -c 3-) #split on space leaves /?role then cut first 2 chars off
-        deploy_scripts/$DEPLOY_SCRIPT_NAME $nc $command
+        source deploy_scripts/$DEPLOY_SCRIPT_NAME $nc $command
     fi
 done
