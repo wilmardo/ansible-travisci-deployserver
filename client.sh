@@ -1,18 +1,16 @@
 #!/bin/bash
-#TODO: Make one curl request and extract http code to prevent inconsistencies
 url=$1
 role=$(printenv TRAVIS_REPO_SLUG | rev | cut -d "-" -f1 | rev) #reverse cut leaves last part of repo name which is role name
 
 echo "Received url: $url"
 echo "Received role: $role"
+exec 3>&1
 if [ "$DEPLOY_CREDENTIALS" ]; then
     echo "DEPLOY_CREDENTIALS defined, sending basic auth request"
-    curl -v -u $DEPLOY_CREDENTIALS $url/?$role
-    http_status=$(curl -u $DEPLOY_CREDENTIALS -s -o /dev/null -w "%{http_code}" $url/?$role)
+    http_status=$(curl -u $DEPLOY_CREDENTIALS -v -s -w "%{http_code}" -o >(cat >&3) $url/?$role)
 else
     echo "DEPLOY_CREDENTIALS undefined, sending request"
-    curl -v $url/?$role
-    http_status=$(curl -s -o /dev/null -w "%{http_code}" $url/?$role)
+    http_status=$(curl -v -s -w "%{http_code}" -o >(cat >&3) $url/?$role)
 fi
 
 echo "HTTP status: $http_status"
