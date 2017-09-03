@@ -122,19 +122,25 @@ for role in "${!playbook_roles[@]}"; do
     pull_role $role
 done
 
-case "${!playbook_roles[@]}" in
-    *"$command"*)
-        printf 'HTTP/1.0 200 OK\r\nContent-Length: 0\r\n\r\n' >&"${nc[1]}"
-        pull_role $command
-        deploy_role $command
-    ;;
-    *)
-        if [ "$command" == "lansible" ]; then
+#TODO: better if else, the command case matches on empty string
+if [ $command ]; then
+    case "${!playbook_roles[@]}" in
+        *"$command"*)
             printf 'HTTP/1.0 200 OK\r\nContent-Length: 0\r\n\r\n' >&"${nc[1]}"
-            pull_lansible
-        else
-            printf 'HTTP/1.1 200 OK\r\nContent-Length: 0\r\n\r\n' >&"${nc[1]}"
-            log_error "Received unrecognized message: '$command'"
-        fi
-    ;;
-esac
+            pull_role $command
+            deploy_role $command
+        ;;
+        *)
+            if [ "$command" == "lansible" ]; then
+                printf 'HTTP/1.0 200 OK\r\nContent-Length: 0\r\n\r\n' >&"${nc[1]}"
+                pull_lansible
+            else
+                printf 'HTTP/1.0 301 Moved Permanently\r\nLocation: https://wilmardenouden.nl/\r\nContent-Length: 0\r\n\r\n' >&"${nc[1]}"
+                log_error "Received unrecognized message: '$command'"
+                #TODO: Add somekind of alert when unknown command is received. Could be security breach
+            fi
+        ;;
+    esac
+else
+    printf 'HTTP/1.0 301 Moved Permanently\r\nLocation: https://wilmardenouden.nl/\r\nContent-Length: 0\r\n\r\n' >&"${nc[1]}"
+fi

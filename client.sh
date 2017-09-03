@@ -8,11 +8,11 @@ echo "Received role: $role"
 if [ "$DEPLOY_CREDENTIALS" ]; then
     echo "DEPLOY_CREDENTIALS defined, sending basic auth request"
     curl -v -u $DEPLOY_CREDENTIALS $url/?$role
-    http_status=$(curl -u $DEPLOY_CREDENTIALS -s -o /dev/null -I -w "%{http_code}" -L $url/?$role)
+    http_status=$(curl -u $DEPLOY_CREDENTIALS -s -o /dev/null -w "%{http_code}" $url/?$role)
 else
     echo "DEPLOY_CREDENTIALS undefined, sending request"
     curl -v $url/?$role
-    http_status=$(curl -s -o /dev/null -I -w "%{http_code}" -L $url/?$role)
+    http_status=$(curl -s -o /dev/null -w "%{http_code}" $url/?$role)
 fi
 
 echo "HTTP status: $http_status"
