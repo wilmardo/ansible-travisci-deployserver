@@ -2,5 +2,8 @@ language: bash
 dist: trusty
 install: true
 
+env:
+  - DEPLOY_SCRIPT_NAME=test.sh
+
 script:
   - tests/test.sh
