@@ -36,6 +36,7 @@ pull_role() {
     typeset path="$roles_path/wilmardo.$1"
 
     if [ -d $path ]; then
+        safeCommand "git --git-dir=$path/.git reset --hard"
         safeCommand "git --git-dir=$path/.git pull"
     else
         safeCommand "git clone --depth 1 https://github.com/wilmardo/ansible-role-$1.git $roles_path/wilmardo.$1"
