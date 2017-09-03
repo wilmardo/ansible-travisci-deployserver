@@ -1,4 +1,7 @@
 #!/bin/bash
+# PASSED VARIABLES
+nc=$1
+command=$2
 
 # STATIC VARIABLES
 # lansible_path: Path to LANsible repository
@@ -7,7 +10,6 @@
 lansible_path=/opt/deploy/LANsible/
 roles_path=/opt/deploy/roles/
 log_path=/opt/deploy/deployserver/
-command=$1
 
 log_error() {
     printf "%(%F %T)T Error : $1 \n Trace:\n $2" -1 >> $log_path/deploy-error.log
