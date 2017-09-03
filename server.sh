@@ -11,14 +11,14 @@
 
 # CLEANUP
 cleanup() {
-    pkill -fx 'nc -lk 56789'
+    pkill -fx 'ncat -lk 56789'
     exit 0
 }
 
 # EXIT TRAP
 trap cleanup INT TERM EXIT
 
-coproc nc { nc -lk 56789; }
+coproc nc { ncat -lk 56789; }
 while [[ $nc_PID ]] && IFS= read -ru ${nc[0]} line; do
     if [[ $line == "GET"* ]]; then
         command=$(echo $line | cut -d ' ' -f 2 | cut -c 3-) #split on space leaves /?role then cut first 2 chars off

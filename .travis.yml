@@ -1,9 +1,14 @@
 language: bash
 dist: trusty
+sudo: required
 install: true
 
 env:
   - DEPLOY_SCRIPT_NAME=test.sh
+
+before_install:
+  - sudo apt-get -qq update
+  - sudo apt-get install -y nmap
 
 script:
   - tests/test.sh
