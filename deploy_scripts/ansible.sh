@@ -1,4 +1,6 @@
 #!/bin/bash
+#TODO: When run as a service the local ansible.cfg has no use, cannot find any roles
+
 # PASSED VARIABLES
 nc=$1
 command=$2
