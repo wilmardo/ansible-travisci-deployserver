@@ -8,4 +8,4 @@ done
 echo "Server started"
 
 echo "Sending request"
-source client.sh "localhost"
+source client.sh "http://localhost:56789"
