@@ -1,12 +1,8 @@
 language: bash
 dist: trusty
-install: true
-env:
-  - DEPLOY_SCRIPT_NAME=test.sh
+sudo: false
 
-before_script:
-  - ./server.sh
+install: true
+
 script:
   - tests/test.sh
-#after_script:
-#  -
